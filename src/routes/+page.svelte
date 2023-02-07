@@ -11,8 +11,7 @@
     </a>
   </p>
   <label
-    for="file"
-    class="aspect-video w-[24rem] flex flex-col justify-center items-center bg-neutral-100 border-2 border-neutral-300 border-dashed rounded-lg cursor-pointer"
+    class="relative aspect-video w-[24rem] flex flex-col justify-center items-center bg-neutral-100 border-2 border-neutral-300 border-dashed rounded-lg"
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-8 h-8 text-neutral-600 mb-2">
       <!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
@@ -22,42 +21,42 @@
       />
     </svg>
     <span>Drop a file here</span>
-  </label>
-  <input
-    id="file"
-    class="hidden"
-    type="file"
-    on:change={(event) => {
-      // read file binary data
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        // convert binary data to hex string
-        const hex = Array.from(new Uint8Array(event.target.result))
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
-        // convert to c array
-        const cArray = hex
-          .match(/.{1,2}/g)
-          .map((b) => `0x${b}`)
-          .join(', ');
-        // make a header file
-        // format file name to be a valid c variable name
-        const name = file.name.replace(/[^a-zA-Z0-9_]/g, '_');
-        const header = `#pragma once
+    <input
+      id="file"
+      class="absolute inset-0 opacity-0 cursor-pointer z-20"
+      type="file"
+      on:change={(event) => {
+        // read file binary data
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          // convert binary data to hex string
+          const hex = Array.from(new Uint8Array(event.target.result))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('');
+          // convert to c array
+          const cArray = hex
+            .match(/.{1,2}/g)
+            .map((b) => `0x${b}`)
+            .join(', ');
+          // make a header file
+          // format file name to be a valid c variable name
+          const name = file.name.replace(/[^a-zA-Z0-9_]/g, '_');
+          const header = `#pragma once
 
 const unsigned char ${name}[] = {
     ${cArray.match(/.{1,48}/g).join('\n    ')}
 };`;
-        // output to file
-        const blob = new Blob([header], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.download = file.name + '.h';
-        a.href = url;
-        a.click();
-      };
-      reader.readAsArrayBuffer(file);
-    }}
-  />
+          // output to file
+          const blob = new Blob([header], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.download = file.name + '.h';
+          a.href = url;
+          a.click();
+        };
+        reader.readAsArrayBuffer(file);
+      }}
+    />
+  </label>
 </div>
